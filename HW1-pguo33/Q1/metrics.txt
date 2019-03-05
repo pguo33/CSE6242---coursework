@@ -1,0 +1,3 @@
+Average node degree: the average number of connected edges per node.
+Diameter of the graph: the maximum value of the smallest distance between two randomly selected nodes.
+Average path length: the average value of the path length between every two nodes.

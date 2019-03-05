@@ -1,0 +1,3 @@
+Repulsion strength is 400.
+For the betweenness centrality of node, the minimum size is 10 and the maximum size is 40.
+Using filters, the lower bound of the degree range is 3.

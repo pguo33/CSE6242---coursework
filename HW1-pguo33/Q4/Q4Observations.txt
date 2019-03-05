@@ -1,0 +1,6 @@
+i.a: The number of rows that return True: 47
+i.b: The number of columns that are newly created in this operation: 5
+ii: The number of clusters found by keying function "metaphone3": 563
+iii: GREL expression: toString("Unbranded")
+iv: GREL expression: if(toNumber(value) > 100, 1, 0)
+v: GREL expression: if(or(contains(value, "discount"), contains(value, "sale"), contains(value, "offer")), 1, 0)
