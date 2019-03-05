@@ -1,0 +1,24 @@
+1. Ease to develop (for developers)
+       Python: Medium for plotting. Require experiences with different module to develop more effectively. 
+       Tableau: Easy to build graphs without coding. Database and server support available.
+       D3: Difficult as most components need intensive coding. Need experience to get familiar with the use of attributes while coding with them.
+
+2. Ease to maintain the visualization for developers (e.g., difficulty of the maintenance of the product as the requirements change, the data changes, the hosting platform changes, etc.)
+       Python: Medium since built-in visualization libraries have friendly API for building powerful visualization
+       Tableau: Easy due to friendly drag and drop UI for modifying data pipelines and dashboards 
+       D3: Difficult to maintain if code is inefficient as it can be difficult to interpret 
+
+3. Usability of visualization developed for end users
+       Python: Medium. Especially easy for the visualization of calculations and scientific simulations.
+       Tableau: Difficult to communicate with end users with only picture files.
+       D3: Easy to use with available source code.
+
+4. Scalability of visualization to "large" datasets
+       Python: Medium, requires external tools (Hadoop, AWS) to scale effectively. And it is not efficient in computing and running rate.
+       Tableau: Easy scalability due to built-in data/web server features, but sometimes it is difficult to manage with too many parameters involved.
+       D3: Appropriate for large datasets with simple operation such as packing parameters in a single function.
+
+5. System requirements to run the visualization (e.g., browsers, OS, software licensing) for end users
+       Python: Python compiler, or some IDEs, free.
+       Tableau: Licensed software, charge.
+       D3: Compiler or IDEs as well, and also browsers (Firefox, Google Chrome, Microsoft Edge, etc.).

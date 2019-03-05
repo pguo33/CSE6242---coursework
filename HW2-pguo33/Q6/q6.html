@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>q6</title>
+<style>
+
+.counties {
+  fill: none;
+}
+
+.states {
+  fill: none;
+  stroke: #fff;
+  stroke-linejoin: round;
+}
+.d3-tip {
+            line-height: 1;
+            padding: 8px;
+            font-size: 16px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            border-radius: 10px;
+        }
+header {
+            margin-top: 100px;
+            text-align: center;
+            font-size: 25px;
+            font-weight: bold;
+        }
+</style>
+<header> Choropleth Map of County Data </header>
+<svg width="960" height="600"></svg>
+<script src="../lib/d3.v5.min.js"></script>
+<script src="../lib/d3-scale-chromatic.v1.min.js"></script>
+<script src="../lib/topojson.v2.min.js"></script>
+<script src="../lib/d3-tip.min.js"></script>>
+<script>
+
+var svg = d3.select("svg"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height");
+var color = d3.scaleThreshold()
+    .domain(d3.range(2, 10))
+    .range(d3.schemeBlues[9]);
+var path = d3.geoPath();
+var legend = svg.selectAll("legend")
+            .data([2,4,6,8,10,12,14,16,18])
+            .enter()
+            .append("g")
+            .attr("class", "legend");
+
+        legend.append("rect")
+            .attr("x", 870)
+            .attr("y", function(d, i) {return 300 + 20 * i; })
+            .attr("width", 20)
+            .attr("height", 20)
+            .style("fill", function(d,i) {return color(d-i);});
+
+        legend.append("text")
+            .attr("x",  905)
+            .attr("y", function(d, i) {return 315 + 20 * i; })
+            .attr("font-size", "14px")
+            .text(function(d) {return d+'%';});
+        legend.append("text")
+            .attr("x", 870)
+            .attr("y", height-310)
+            .text("Poverty Rate")
+            .attr("text-anchor", "start")
+            .attr("font-weight", "bold")
+            .attr("fill", "#000");
+        legend.append("text")
+            .attr("x", 895)
+            .attr("y", 315)
+            .attr("font-size", "14px")
+            .text(function(d) {return "≤";});
+        legend.append("text")
+            .attr("x", 895)
+            .attr("y", 475)
+            .attr("font-size", "14px")
+            .text(function(d) {return "≥";});
+
+
+
+Promise.all([
+  d3.csv("county_detail.csv"),
+  d3.csv("county_poverty.csv"),
+  d3.json("us.json")]).then(function(file) {
+    var detail_csv = file[0];
+    var poverty_csv = file[1];
+    var us = file[2];
+    var poverty = [];
+    poverty_csv.forEach(function(d) {
+      poverty[+d.CensusId] = +d.Poverty;
+    });
+
+    var tip = d3.tip()
+        .attr('class', 'd3-tip')
+        .html(function(d) {
+          var info = "";
+          for(var i=0; i<poverty_csv.length; ++i) {
+            if(poverty_csv[i].CensusId == +d.id){
+              info += "State: " + poverty_csv[i].State + "<br/>";
+              info += "County: " + poverty_csv[i].County + "<br/>";
+              info += "Poverty Rate: " + poverty_csv[i].Poverty + "%" + "<br/>";
+            }
+          }
+          for(var i=0; i<detail_csv.length; ++i) {
+            if(detail_csv[i].CensusId == +d.id){
+              info += "Total Population: " + detail_csv[i].TotalPop + "<br/>";
+              info += "Income per capita: " + detail_csv[i].IncomePerCap + "<br/>";
+            }
+          }
+          return "<p><span style='color:yellow'>"+info+"</span><p>"
+        });
+    svg.call(tip);
+
+    svg.append("g")
+            .attr("class", "counties")
+            .selectAll("path")
+            .data(topojson.feature(us, us.objects.counties).features)
+            .enter()
+            .append("path")
+            .attr("d", path)
+            .attr("fill", function(d) { return color(poverty[+d.id]); })
+            .on("mouseover", tip.show)
+            .on("mouseout", tip.hide);
+
+    svg.append("path")
+       .datum(topojson.mesh(us, us.objects.states, function(a,b){ return a!= b;}))
+       .attr("class", "states")
+       .attr("d", path);
+
+
+
+  });
+
+</script>

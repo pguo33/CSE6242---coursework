@@ -1,0 +1,5 @@
+a.2
+Wins+Nominations vs. Rating is a better combination that separates the classes, because the bad rating class is to the left and bottom to the good rating class. However, in the other combination, the bad rating class is only to the left of the good rating class.
+
+c
+When the data varies in a big range, it is better to use sqrt scale or log scale. Compared with the sqrt scale, log scale can handle a bigger range of data values, but the upper points would be denser. For this figure Wins+Nominations vs. Rating, sqrt scale is better with the limited range data.

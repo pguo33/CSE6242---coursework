@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+    <meta charset="UTF-8">
+    <title>heatmap</title>
+    <script src="../lib/d3.v5.min.js"></script>
+    <style>
+
+        #header {
+            padding-top: 20px;
+            padding-bottom: 10px;
+            font-size: larger;
+            font-weight: bold;
+        }
+
+        #dropdown {
+            text-align: center;
+        }
+
+        #chart {
+            text-align: center;
+        }
+
+        .box {
+            stroke: #E6E6E6;
+            stroke-width: 5px;
+        }
+
+        .legend rect {
+            stroke: #000;
+            stroke-width: 1px;
+        }
+
+    </style>
+<body>
+<div id="dropdown">
+    <header id="header"> Visualizing Crimes in New York City </header>
+    <label>Year </label></div>
+
+<div id="chart"></div>
+    <script>
+
+        // initialization
+        var margin = {top: 0, right: 0, bottom: 20, left: 20},
+            width = 900 - margin.left - margin.right,
+            height = 700 - margin.top - margin.bottom,
+            boxSize = Math.floor(width/10) - 15,
+            colors = ["#ffffcc", "#ffeda0", "#fed976", "#feb24c", "#fd8d3c", "#fc4e2a","#e31a1c", "#bd0026", "#800026"],
+            colorScale = d3.scaleQuantile().range(colors);
+
+        var svg = d3.select("#chart").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        // create the dropdown
+        var options = ["2011", "2012", "2013", "2014", "2015"];
+        var dropdown = d3.select("#dropdown")
+            .append("select")
+            .attr("class", "select")
+            .attr("font-size", "20px");
+
+        dropdown.selectAll('option')
+            .data(options).enter()
+            .append('option')
+            .text(function (d) { return d; });
+
+        d3.csv("heatmap.csv").then(function(data){
+            var boroughs = ["Bronx","Brooklyn","Manhattan","Queens","Staten Island"];
+            var crimes = [1,2,3,4,5,6];
+            var crimeType = ["Assault","Burglary","Housing","Murder","Robbery","Shooting"];
+            // reformat the data
+            var years = new Array(5);
+            for (var i = 2010; i < 2015; i++) {
+                years[i] = [];
+            }
+
+          data.forEach(function(d){
+           if(d["Crime Type"]){
+             if(d["Crime Type"] == "Assault") d["Crime Type"] = 1;
+             else if(d["Crime Type"] == "Burglary") d["Crime Type"] = 2;
+             else if(d["Crime Type"] == "Housing") d["Crime Type"] = 3;
+             else if(d["Crime Type"] == "Murder") d["Crime Type"] = 4;
+             else if(d["Crime Type"] == "Robbery") d["Crime Type"] = 5;
+             else if(d["Crime Type"] == "Shooting") d["Crime Type"] = 6;
+
+                for (var i = 0; i < 5; i++) {
+                    d["Year"] = +d["Year"];
+                    d["Crime Type"] = +d["Crime Type"];
+                    d[boroughs[i]] = +d[boroughs[i]];
+                    //console.log(d[boroughs[i]],boroughs[i]);
+                    if(d["Year"] == 2011) years[2010].push({"CrimeType": d["Crime Type"], "Borough": boroughs[i], "number": d[boroughs[i]]});
+                    else if(d["Year"] == 2012) years[2011].push({"CrimeType": d["Crime Type"], "Borough": boroughs[i], "number": d[boroughs[i]]});
+                    else if(d["Year"] == 2013) years[2012].push({"CrimeType": d["Crime Type"], "Borough": boroughs[i], "number": d[boroughs[i]]});
+                    else if(d["Year"] == 2014) years[2013].push({"CrimeType": d["Crime Type"], "Borough": boroughs[i], "number": d[boroughs[i]]});
+                    else if(d["Year"] == 2015) years[2014].push({"CrimeType": d["Crime Type"], "Borough": boroughs[i], "number": d[boroughs[i]]});
+                }
+            }
+        });
+            updateMap(2011);
+
+            // read dropdown option
+            dropdown.on("change", function(){
+                var selected = d3.event.target.value;
+                updateMap(selected);
+            });
+
+            // update the heatmap
+            function updateMap(selected) {
+                // remove previous data
+                svg.selectAll(".box").remove();
+                svg.selectAll(".legend").remove();
+
+                // adjust the color scale domain
+                colorScale.domain([0, 8, d3.max(years[selected - 1],
+                    function(d){ return d.number;})]);
+
+                // create boxes
+                var boxes = svg.selectAll(".box")
+                    .data(years[selected - 1]);
+
+                boxes.enter()
+                    .append("rect")
+                    .attr("x", function(d) {
+                        return 60 + (d.CrimeType - 1) * boxSize;})
+                    .attr("y", function(d) {
+                        return 105 + (boroughs.indexOf(d.Borough) - 1) * boxSize;
+                    })
+                    .attr("rx", 10)
+                    .attr("ry", 10)
+                    .attr("class", "box")
+                    .attr("width", boxSize)
+                    .attr("height", boxSize)
+                    .style("fill", function(d) { return colorScale(d.number); });
+
+                // create legend
+                var legend = svg.selectAll(".legend")
+                    .data([0].concat(colorScale.quantiles()), function(d){return d;})
+                    .enter().append("g")
+                    .attr("class","legend");
+
+                legend.append("rect")
+                    .attr("x", function(d, i) {return 60 + (boxSize / 2) * i})
+                    .attr("y", 525)
+                    .attr("width", boxSize / 2)
+                    .attr("height", boxSize / 3)
+                    .style("fill", function(d, i) {return colors[i]});
+
+                legend.append("text").attr("class", "legend")
+                    .attr("x", function(d, i) {
+                        return 60 + i * boxSize / 2})
+                    .attr("y", 570)
+                    .attr("font-size", "14px")
+                    .text(function(d){return Math.round(d);});
+            }
+
+            // create labels
+            var boroughLabel = svg.selectAll(".boroughLabel")
+                .data(boroughs)
+                .enter().append("text")
+                .text(function (d) { return d; })
+                .attr("x", 0)
+                .attr("y", function (d, i) { return 30 + i * boxSize; })
+                .style("text-anchor", "end")
+                .attr("transform", "translate(50," + boxSize / 1.5 + ")")
+                .attr("class", "boroughLabel");
+
+            var crimeLabel = svg.selectAll(".crimeLabel")
+                .data(crimeType)
+                .enter().append("text")
+                .text(function(d) { return d; })
+                .attr("x", function(d, i) { return i * boxSize; })
+                .attr("y", 10)
+                .style("text-anchor", "middle")
+                .attr("transform", "translate(88 ," + (5 * boxSize + 50) + ")")
+                .attr("class", "crimeLabel");
+
+            // create tags
+            var boroughTag = svg.append("text")
+                .attr("x", 25)
+                .attr("y", 25)
+                .attr("text-anchor", "middle")
+                .style("font-size", "16px")
+                .style("font-weight", "bold")
+                .text("Borough");
+
+            var crimeTag = svg.append("text")
+                .attr("x", 550)
+                .attr("y", (5 * boxSize + 60))
+                .attr("text-anchor", "middle")
+                .style("font-size", "16px")
+                .style("font-weight", "bold")
+                .text("Crime Type");
+
+            svg.append("text")
+                .attr("x", 65)
+                .attr("y", 500)
+                .text("No. of Crimes");
+
+        });
+    </script>
+</body>
+</html>
